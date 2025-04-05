@@ -1,54 +1,41 @@
+from fastapi import FastAPI
 import os
-import time
 import sys
 
-# Force Vercel environment variable to be set before any imports
+# Force Vercel environment variable to be set
 os.environ["VERCEL"] = "1"
 os.environ["SKIP_FILE_OPERATIONS"] = "1"
 
-# Log the current environment
-print("Current environment:")
-print(f"- Python version: {sys.version}")
-print(f"- Working directory: {os.getcwd()}")
-print(f"- Environment variables: {[k for k in os.environ.keys() if k.startswith('PYTHON') or k == 'VERCEL' or k == 'SKIP_FILE_OPERATIONS']}")
+# Log environment information
+print(f"Python version: {sys.version}")
+print(f"Working directory: {os.getcwd()}")
 
 try:
-    # Try to import the main app with a simpler approach
-    print("Attempting to import FastAPI app...")
+    # Import the main FastAPI app
     from app.main import app
+    from mangum import Mangum
     
-    # Define handler function - use the app directly instead of wrapping it
-    handler = app
+    # Create an API Gateway handler with Mangum
+    handler = Mangum(app)
     
-    print("Successfully imported app.main and created handler")
+    print("Successfully configured FastAPI app with Mangum handler")
     
 except Exception as e:
-    # If importing fails, create a minimal app
-    print(f"Error importing app.main: {str(e)}")
+    # If app import fails, create a minimal app
+    print(f"Error importing main app: {str(e)}")
     from fastapi import FastAPI
+    from mangum import Mangum
     
     minimal_app = FastAPI()
     
     @minimal_app.get("/")
     async def root():
         return {
-            "success": False,
-            "message": "Minimal fallback app - main app failed to load",
-            "error": str(e),
-            "vercel": os.environ.get('VERCEL') == '1',
-            "timestamp": time.time()
+            "status": "error",
+            "message": "Main app failed to load",
+            "error": str(e)
         }
     
-    @minimal_app.get("/debug")
-    async def debug():
-        return {
-            "python_version": sys.version,
-            "working_directory": os.getcwd(),
-            "directory_contents": os.listdir(),
-            "environment": {k: v for k, v in os.environ.items() 
-                          if k.startswith('PYTHON') or k == 'VERCEL' or k == 'SKIP_FILE_OPERATIONS'}
-        }
-    
-    # Use the minimal app directly as the handler
-    handler = minimal_app
+    # Create handler for minimal app
+    handler = Mangum(minimal_app)
  
