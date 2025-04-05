@@ -6,6 +6,7 @@ import string
 from openai import OpenAI
 from PIL import Image
 from io import BytesIO
+import asyncio
 
 # Initialize OpenAI client with fallback to environment variables
 try:
@@ -20,6 +21,15 @@ except ImportError:
 # Safeguard for missing API key
 if not api_key:
     print("WARNING: OpenAI API key is not set!")
+
+# Check for Vercel Blob token
+BLOB_TOKEN = os.environ.get('BLOB_READ_WRITE_TOKEN')
+IN_VERCEL = os.environ.get('VERCEL') == '1'
+
+if IN_VERCEL and not BLOB_TOKEN:
+    print("WARNING: Running in Vercel but BLOB_READ_WRITE_TOKEN is not set!")
+else:
+    os.environ["BLOB_READ_WRITE_TOKEN"] = BLOB_TOKEN
 
 # Initialize OpenAI client
 try:
@@ -112,16 +122,44 @@ Return ONLY a JSON array with exactly 2 strings, nothing else."""},
         else:
             return [prompt, f"Pixel art variant of {prompt}"]
 
-def generate_meme_image(prompt):
+async def upload_to_vercel_blob(image_data, filename):
+    """Upload image data to Vercel Blob storage"""
+    try:
+        # Set environment variable
+        os.environ["BLOB_READ_WRITE_TOKEN"] = BLOB_TOKEN
+        
+        # Import the Vercel Blob SDK
+        from vercel_blob import put, PutOptions
+        
+        # Upload to Vercel Blob
+        blob = await put(filename, image_data, PutOptions(access="public"))
+        
+        # Return the URL
+        return {
+            "success": True,
+            "url": blob.url
+        }
+    except Exception as e:
+        print(f"Error uploading to Vercel Blob: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+async def generate_meme_image(prompt):
     """Generate meme images using OpenAI DALL-E based on parsed prompt"""
     try:
         # Parse the prompt into 2 distinct items
         parsed_prompts = clean_and_parse_prompt(prompt)
         results = []
         
+        # Check if we're running in Vercel
+        in_vercel = os.environ.get('VERCEL') == '1'
+        
         for idx, item_prompt in enumerate(parsed_prompts):
-            # Format the prompt to specifically request an icon-style image
-            icon_prompt = f"""Create a simple, clean, pixel art icon of {item_prompt}. 
+            try:
+                # Format the prompt to specifically request an icon-style image
+                icon_prompt = f"""Create a simple, clean, pixel art icon of {item_prompt}. 
 The image should:
 - Be a single object or character with a simple background
 - Have a clean, minimalist design suitable for an icon
@@ -129,60 +167,89 @@ The image should:
 - NOT be a comic panel, scene, or conversational image
 - Centered composition with the subject taking up most of the frame
 - Be suitable for use as a game character icon or token"""
-            
-            # Generate image with DALL-E
-            response = client.images.generate(
-                model="dall-e-2",
-                prompt=icon_prompt,
-                size="1024x1024",
-                quality="standard",
-                n=1,
-            )
-            
-            # Get the image URL
-            image_url = response.data[0].url
-            
-            # Check if we're running in Vercel
-            in_vercel = os.environ.get('VERCEL') == '1'
-            
-            if not in_vercel:
-                # Download the image when not in Vercel
-                image_response = requests.get(image_url)
-                if image_response.status_code != 200:
-                    continue
                 
-                # Save the image
+                # Generate image with DALL-E
+                response = client.images.generate(
+                    model="dall-e-2",
+                    prompt=icon_prompt,
+                    size="1024x1024",
+                    quality="standard",
+                    n=1,
+                )
+                
+                # Get the image URL
+                image_url = response.data[0].url
                 file_name = f"{int(time.time())}_{idx}_{generate_random_name()}.png"
-                os.makedirs(meme_storage_path, exist_ok=True)
-                file_path = os.path.join(meme_storage_path, file_name)
                 
-                with open(file_path, "wb") as f:
-                    f.write(image_response.content)
-                
-                # Create a coin icon (simplified version of the image)
-                create_coin_icon(image_response.content, file_name)
-                
-                results.append({
-                    "prompt": item_prompt,
-                    "image_path": file_path,
-                    "image_url": f"/images/{file_name}",
-                    "coin_icon_url": f"/images/coin_{file_name}"
-                })
-            else:
-                # In Vercel, just return the DALL-E URL directly
-                file_name = f"{int(time.time())}_{idx}_{generate_random_name()}.png"
-                results.append({
-                    "prompt": item_prompt,
-                    "image_path": "none",
-                    "image_url": image_url,  # Use the DALL-E URL directly
-                    "coin_icon_url": image_url  # Use the same URL for coin icon
-                })
+                if in_vercel:
+                    # In Vercel environment, use Blob storage if possible
+                    if BLOB_TOKEN:
+                        try:
+                            # Download the image from DALL-E
+                            image_response = requests.get(image_url)
+                            if image_response.status_code == 200:
+                                # Upload to Vercel Blob
+                                blob_result = await upload_to_vercel_blob(image_response.content, file_name)
+                                if blob_result["success"]:
+                                    # We have successfully uploaded to Blob storage
+                                    results.append({
+                                        "prompt": item_prompt,
+                                        "image_path": "vercel_blob",
+                                        "image_url": blob_result["url"],
+                                        "coin_icon_url": blob_result["url"]  # For now, use same URL
+                                    })
+                                    continue
+                        except Exception as blob_error:
+                            print(f"Error using Blob storage: {str(blob_error)}")
+                            # Fallback to using DALL-E URL directly
+                    
+                    # Fallback: use DALL-E URL directly
+                    results.append({
+                        "prompt": item_prompt,
+                        "image_path": "dalle_direct",
+                        "image_url": image_url,  # Use the DALL-E URL directly
+                        "coin_icon_url": image_url  # Use the same URL for coin icon
+                    })
+                else:
+                    # For local development, save to filesystem
+                    image_response = requests.get(image_url)
+                    if image_response.status_code != 200:
+                        continue
+                    
+                    # Save the image
+                    os.makedirs(meme_storage_path, exist_ok=True)
+                    file_path = os.path.join(meme_storage_path, file_name)
+                    
+                    with open(file_path, "wb") as f:
+                        f.write(image_response.content)
+                    
+                    # Create a coin icon (simplified version of the image)
+                    create_coin_icon(image_response.content, file_name)
+                    
+                    results.append({
+                        "prompt": item_prompt,
+                        "image_path": file_path,
+                        "image_url": f"/images/{file_name}",
+                        "coin_icon_url": f"/images/coin_{file_name}"
+                    })
+            except Exception as item_error:
+                print(f"Error generating item {idx}: {str(item_error)}")
+                # Continue with next item
+                continue
         
+        # If we didn't generate any items successfully, return an error
+        if not results:
+            return {
+                "success": False,
+                "error": "Failed to generate any images"
+            }
+            
         return {
             "success": True,
             "items": results
         }
     except Exception as e:
+        print(f"AI Error: {str(e)}")
         return {
             "success": False,
             "error": str(e)

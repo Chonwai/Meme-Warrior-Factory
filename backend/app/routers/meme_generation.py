@@ -54,7 +54,7 @@ async def generate_meme(
         # For Vercel environment, use simplified flow without DB
         if IN_VERCEL:
             # Generate the meme images
-            image_result = generate_meme_image(request.prompt)
+            image_result = await generate_meme_image(request.prompt)
             
             if not image_result["success"]:
                 # Return error instead of raising exception
@@ -111,7 +111,7 @@ async def generate_meme(
             }
         
         # Generate the meme images
-        image_result = generate_meme_image(request.prompt)
+        image_result = await generate_meme_image(request.prompt)
         
         if not image_result["success"]:
             return {
@@ -169,38 +169,69 @@ async def generate_meme_test(
     
     This endpoint is intended for frontend testing only.
     """
+    debug_info = {
+        "vercel": os.environ.get('VERCEL') == '1',
+        "current_directory": os.getcwd(),
+        "environment_vars": [k for k in os.environ.keys() if k.startswith('OPEN') or k.startswith('MEME') or k.startswith('BLOB') or k == 'VERCEL']
+    }
+    
     try:
         # Generate the meme images
-        image_result = generate_meme_image(request.prompt)
+        print(f"Processing prompt: {request.prompt}")
+        debug_info["prompt"] = request.prompt
+        debug_info["generating_images"] = "attempting"
+        
+        # Generate images (this is now async)
+        image_result = await generate_meme_image(request.prompt)
+        debug_info["generating_images"] = "completed"
+        debug_info["image_result_success"] = image_result["success"]
         
         if not image_result["success"]:
+            error_detail = image_result.get("error", "Failed to generate images")
+            debug_info["error_detail"] = error_detail
             return {
                 "success": False,
-                "error": image_result.get("error", "Failed to generate images")
+                "error": error_detail,
+                "debug_info": debug_info
             }
             
         # Generate names for each item
+        debug_info["generated_item_count"] = len(image_result["items"])
         result_items = []
-        for item in image_result["items"]:
-            # Generate a name for this meme soldier
-            name = generate_meme_soldier_name(item["prompt"])
-            
-            result_items.append({
-                "id": 999,  # Dummy ID
-                "name": name,
-                "prompt": item["prompt"],
-                "image_url": item["image_url"],
-                "coin_icon_url": item["coin_icon_url"]
-            })
+        
+        for idx, item in enumerate(image_result["items"]):
+            try:
+                # Generate a name for this meme soldier
+                debug_info[f"item_{idx}_prompt"] = item["prompt"]
+                name = generate_meme_soldier_name(item["prompt"])
+                debug_info[f"item_{idx}_name"] = name
+                
+                result_items.append({
+                    "id": 999,  # Dummy ID
+                    "name": name,
+                    "prompt": item["prompt"],
+                    "image_url": item["image_url"],
+                    "coin_icon_url": item["coin_icon_url"]
+                })
+            except Exception as item_error:
+                debug_info[f"item_{idx}_error"] = str(item_error)
+                # Continue with next item
         
         return {
             "success": True,
-            "items": result_items
+            "items": result_items,
+            "debug_info": debug_info
         }
     except Exception as e:
+        debug_info["error"] = str(e)
+        debug_info["error_type"] = type(e).__name__
+        import traceback
+        debug_info["traceback"] = traceback.format_exc()
+        
         return {
             "success": False,
-            "error": str(e)
+            "error": str(e),
+            "debug_info": debug_info
         }
 
 # Only include this endpoint if not in Vercel

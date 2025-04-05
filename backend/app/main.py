@@ -5,6 +5,9 @@ import os
 import sys
 import importlib
 import time
+from io import BytesIO
+import tempfile
+from PIL import Image, ImageDraw, ImageFont
 
 # Detect if we're running in Vercel
 IN_VERCEL = os.environ.get('VERCEL') == '1'
@@ -172,4 +175,64 @@ async def safe_openai_test():
             "success": False,
             "message": "Unexpected error during testing",
             "debug_info": debug_info
+        }
+
+@app.get("/test-blob")
+async def test_blob():
+    """Test endpoint for Vercel Blob storage"""
+    try:
+        # Check if we're in Vercel
+        in_vercel = os.environ.get('VERCEL') == '1'
+        if not in_vercel:
+            return {
+                "success": False,
+                "message": "This endpoint is for testing Vercel Blob storage and only works in Vercel."
+            }
+        
+        # Check for Blob token
+        blob_token = os.environ.get('BLOB_READ_WRITE_TOKEN')
+        if not blob_token:
+            return {
+                "success": False,
+                "message": "BLOB_READ_WRITE_TOKEN environment variable is not set."
+            }
+        
+        # Set environment variable
+        os.environ["BLOB_READ_WRITE_TOKEN"] = blob_token
+        
+        # Create a simple test image
+        from PIL import Image, ImageDraw, ImageFont
+        
+        # Create a test image
+        image = Image.new('RGB', (200, 200), color=(73, 109, 137))
+        d = ImageDraw.Draw(image)
+        d.text((20, 20), "Hello from Vercel Blob!", fill=(255, 255, 0))
+        
+        # Save to BytesIO
+        img_io = BytesIO()
+        image.save(img_io, 'PNG')
+        img_io.seek(0)
+        img_data = img_io.getvalue()
+        
+        # Import Vercel Blob SDK
+        from vercel_blob import put, PutOptions
+        
+        # Upload to Vercel Blob
+        filename = f"test_blob_{int(time.time())}.png"
+        blob = await put(filename, img_data, PutOptions(access="public"))
+        
+        return {
+            "success": True,
+            "message": "Successfully uploaded test image to Vercel Blob",
+            "url": blob.url,
+            "size": blob.size,
+            "timestamp": time.time()
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "success": False,
+            "message": "Failed to test Vercel Blob storage",
+            "error": str(e),
+            "traceback": traceback.format_exc()
         } 
