@@ -5,9 +5,8 @@
       "src": "index.py",
       "use": "@vercel/python",
       "config": {
-        "maxLambdaSize": "15mb",
         "runtime": "python3.9",
-        "requirementsPath": "requirements-vercel.txt"
+        "requirementsPath": "requirements-minimal.txt"
       }
     }
   ],
@@ -19,11 +18,7 @@
   ],
   "env": {
     "PYTHONUNBUFFERED": "true",
-    "PYTHONPATH": "/var/task"
-  },
-  "build": {
-    "env": {
-      "PIP_FLAGS": "--no-dependencies"
-    }
+    "VERCEL": "1",
+    "SKIP_FILE_OPERATIONS": "1"
   }
 } 

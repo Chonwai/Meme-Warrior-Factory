@@ -257,6 +257,10 @@ The image should:
 
 def create_coin_icon(image_data, original_filename):
     """Create a circular coin icon from the meme image"""
+    # Skip in Vercel environment
+    if IN_VERCEL:
+        return False
+        
     try:
         # Open the image
         img = Image.open(BytesIO(image_data))
