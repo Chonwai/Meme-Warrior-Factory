@@ -1,6 +1,11 @@
 import os
 import uvicorn
 from app.config.settings import settings
+from app.main import app
+from mangum import Mangum
+
+# 為Vercel創建handler
+handler = Mangum(app)
 
 # from init_db import init_db, create_test_data
 
