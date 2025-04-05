@@ -15,21 +15,22 @@ print(f"- Environment variables: {[k for k in os.environ.keys() if k.startswith(
 try:
     # Try to import the main app with a simpler approach
     print("Attempting to import FastAPI app...")
-    from fastapi import FastAPI
-    from app.main import app as main_app
-    print("Successfully imported app.main")
+    from app.main import app
     
-    # Create handler for Vercel
-    handler = main_app
+    # Define a simpler handler function
+    async def handler(scope, receive, send):
+        await app(scope, receive, send)
+    
+    print("Successfully imported app.main and created handler")
     
 except Exception as e:
     # If importing fails, create a minimal app
     print(f"Error importing app.main: {str(e)}")
     from fastapi import FastAPI
     
-    app = FastAPI()
+    minimal_app = FastAPI()
     
-    @app.get("/")
+    @minimal_app.get("/")
     async def root():
         return {
             "success": False,
@@ -39,7 +40,7 @@ except Exception as e:
             "timestamp": time.time()
         }
     
-    @app.get("/debug")
+    @minimal_app.get("/debug")
     async def debug():
         return {
             "python_version": sys.version,
@@ -49,6 +50,7 @@ except Exception as e:
                           if k.startswith('PYTHON') or k == 'VERCEL' or k == 'SKIP_FILE_OPERATIONS'}
         }
     
-    # Create handler for Vercel
-    handler = app
+    # Create ASGI handler for minimal app
+    async def handler(scope, receive, send):
+        await minimal_app(scope, receive, send)
  
