@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
+import time
 
 # Define a router with tags
 router = APIRouter(
@@ -56,10 +57,11 @@ async def generate_meme(
             image_result = generate_meme_image(request.prompt)
             
             if not image_result["success"]:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=image_result.get("error", "Failed to generate images")
-                )
+                # Return error instead of raising exception
+                return {
+                    "success": False,
+                    "error": image_result.get("error", "Failed to generate images")
+                }
                 
             # Generate names for each item
             result_items = []
@@ -103,19 +105,19 @@ async def generate_meme(
         
         # Regular authentication check for non-test mode
         if not test_mode and not current_user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication required"
-            )
+            return {
+                "success": False,
+                "error": "Authentication required"
+            }
         
         # Generate the meme images
         image_result = generate_meme_image(request.prompt)
         
         if not image_result["success"]:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=image_result.get("error", "Failed to generate images")
-            )
+            return {
+                "success": False,
+                "error": image_result.get("error", "Failed to generate images")
+            }
             
         # Generate names and create records for each item
         result_items = []
@@ -154,10 +156,10 @@ async def generate_meme(
     except Exception as e:
         if db:
             db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
 @router.post("/generate_test", response_model=dict)
 async def generate_meme_test(
@@ -172,10 +174,10 @@ async def generate_meme_test(
         image_result = generate_meme_image(request.prompt)
         
         if not image_result["success"]:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=image_result.get("error", "Failed to generate images")
-            )
+            return {
+                "success": False,
+                "error": image_result.get("error", "Failed to generate images")
+            }
             
         # Generate names for each item
         result_items = []
@@ -196,10 +198,10 @@ async def generate_meme_test(
             "items": result_items
         }
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
 # Only include this endpoint if not in Vercel
 if not IN_VERCEL:
@@ -228,4 +230,14 @@ if not IN_VERCEL:
             "message": "Minting functionality will be implemented later",
             "soldier_id": soldier_id,
             "name": soldier.name
-        } 
+        }
+
+@router.get("/test")
+async def test_endpoint():
+    """Simple test endpoint that doesn't use any external dependencies"""
+    return {
+        "success": True,
+        "message": "Meme generation router is functioning",
+        "time": time.time() if 'time' in globals() else None,
+        "vercel": IN_VERCEL
+    } 

@@ -17,8 +17,24 @@ except ImportError:
     api_key = os.environ.get('OPENAI_API_KEY')
     meme_storage_path = os.environ.get('MEME_STORAGE_PATH', './meme_images')
 
+# Safeguard for missing API key
+if not api_key:
+    print("WARNING: OpenAI API key is not set!")
+
 # Initialize OpenAI client
-client = OpenAI(api_key=api_key)
+try:
+    client = OpenAI(api_key=api_key)
+    print(f"OpenAI client initialized successfully with API key starting with: {api_key[:4] if api_key else 'None'}")
+except Exception as e:
+    print(f"Error initializing OpenAI client: {str(e)}")
+    # Create a dummy client that will raise clear errors
+    class DummyClient:
+        def __getattr__(self, name):
+            def method(*args, **kwargs):
+                raise ValueError("OpenAI client is not properly initialized. Check OPENAI_API_KEY.")
+            return method
+    
+    client = DummyClient()
 
 def generate_random_name(prefix="MemeSoldier"):
     """Generate a random name for a meme soldier"""
@@ -219,3 +235,5 @@ def generate_meme_soldier_name(prompt):
     except Exception:
         # Fallback to random name
         return generate_random_name() 
+
+

@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 import sys
 import importlib
+import time
 
 # Detect if we're running in Vercel
 IN_VERCEL = os.environ.get('VERCEL') == '1'
@@ -57,44 +58,118 @@ async def root():
         "environment": "Vercel" if IN_VERCEL else "Development"
     }
 
-@app.get("/test-openai")
-async def test_openai():
-    """Simple endpoint to test OpenAI integration"""
+@app.get("/api-test")
+async def api_test():
+    """Extremely basic test endpoint that doesn't rely on any external dependencies"""
+    return {
+        "success": True,
+        "message": "Basic API connectivity test passed",
+        "time": time.time(),
+        "vercel": IN_VERCEL
+    }
+
+@app.get("/safe-openai-test")
+async def safe_openai_test():
+    """Simple endpoint to test OpenAI integration with better error handling"""
+    debug_info = {
+        "vercel": IN_VERCEL,
+        "steps": []
+    }
+    
     try:
-        from openai import OpenAI
+        # Step 1: Check environment
+        debug_info["steps"].append("Checking environment")
+        env_vars = {}
+        for key in sorted(os.environ.keys()):
+            if key.startswith('OPENAI') or key.startswith('VERCEL'):
+                # Only show that it exists, not the value
+                env_vars[key] = "✓ Set" if os.environ.get(key) else "✗ Not set"
+        debug_info["environment_variables"] = env_vars
         
-        # Get API key with fallback
+        # Step 2: Try importing OpenAI
+        debug_info["steps"].append("Importing OpenAI")
+        try:
+            from openai import OpenAI
+            debug_info["openai_import"] = "Success"
+        except Exception as import_error:
+            debug_info["openai_import"] = f"Failed: {str(import_error)}"
+            return {
+                "success": False,
+                "message": "Failed to import OpenAI library",
+                "debug_info": debug_info
+            }
+        
+        # Step 3: Get API key
+        debug_info["steps"].append("Getting API key")
         api_key = None
         try:
             from app.config.settings import settings
             api_key = settings.OPENAI_API_KEY
+            debug_info["api_key_source"] = "settings"
         except ImportError:
             api_key = os.environ.get('OPENAI_API_KEY')
+            debug_info["api_key_source"] = "environment"
         
         if not api_key:
+            debug_info["api_key_found"] = False
             return {
                 "success": False,
-                "error": "OpenAI API key not found"
+                "message": "OpenAI API key not found",
+                "debug_info": debug_info
+            }
+        else:
+            debug_info["api_key_found"] = True
+            # Show partial key for debugging (safely)
+            if len(api_key) > 10:
+                debug_info["api_key_format"] = f"{api_key[:5]}...{api_key[-4:]}"
+        
+        # Step 4: Try creating client
+        debug_info["steps"].append("Creating OpenAI client")
+        try:
+            client = OpenAI(api_key=api_key)
+            debug_info["client_created"] = True
+        except Exception as client_error:
+            debug_info["client_error"] = str(client_error)
+            return {
+                "success": False,
+                "message": "Failed to create OpenAI client",
+                "debug_info": debug_info
             }
         
-        # Test OpenAI connection
-        client = OpenAI(api_key=api_key)
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": "Say hello!"}
-            ],
-            max_tokens=10
-        )
-        
-        return {
-            "success": True,
-            "message": response.choices[0].message.content,
-            "model": response.model
-        }
+        # Step 5: Simple test request (not image generation)
+        debug_info["steps"].append("Making simple API request")
+        try:
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a test assistant."},
+                    {"role": "user", "content": "Return only the word 'SUCCESS' without quotes or explanation"}
+                ],
+                max_tokens=10,
+                temperature=0
+            )
+            debug_info["api_request"] = "Success"
+            result = response.choices[0].message.content.strip()
+            debug_info["api_response"] = result
+            
+            return {
+                "success": True,
+                "message": "OpenAI test successful",
+                "response": result,
+                "debug_info": debug_info
+            }
+        except Exception as api_error:
+            debug_info["api_error"] = str(api_error)
+            return {
+                "success": False,
+                "message": "Failed to make OpenAI API request",
+                "debug_info": debug_info
+            }
+    
     except Exception as e:
+        debug_info["error"] = str(e)
         return {
             "success": False,
-            "error": str(e)
+            "message": "Unexpected error during testing",
+            "debug_info": debug_info
         } 
