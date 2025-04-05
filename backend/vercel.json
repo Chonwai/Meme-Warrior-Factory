@@ -3,7 +3,12 @@
   "builds": [
     {
       "src": "index.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.9",
+        "requirementsPath": "requirements-vercel.txt"
+      }
     }
   ],
   "routes": [
@@ -13,11 +18,12 @@
     }
   ],
   "env": {
-    "PYTHONUNBUFFERED": "true"
+    "PYTHONUNBUFFERED": "true",
+    "PYTHONPATH": "/var/task"
   },
   "build": {
     "env": {
-      "PIP_FLAGS": "--no-binary :all:"
+      "PIP_FLAGS": "--no-dependencies"
     }
   }
 } 

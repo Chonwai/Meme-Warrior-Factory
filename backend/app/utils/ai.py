@@ -4,12 +4,21 @@ import time
 import random
 import string
 from openai import OpenAI
-from app.config.settings import settings
 from PIL import Image
 from io import BytesIO
 
+# Initialize OpenAI client with fallback to environment variables
+try:
+    from app.config.settings import settings
+    api_key = settings.OPENAI_API_KEY
+    meme_storage_path = settings.MEME_STORAGE_PATH
+except ImportError:
+    # Fallback for Vercel environment
+    api_key = os.environ.get('OPENAI_API_KEY')
+    meme_storage_path = os.environ.get('MEME_STORAGE_PATH', './meme_images')
+
 # Initialize OpenAI client
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
+client = OpenAI(api_key=api_key)
 
 def generate_random_name(prefix="MemeSoldier"):
     """Generate a random name for a meme soldier"""
@@ -117,28 +126,41 @@ The image should:
             # Get the image URL
             image_url = response.data[0].url
             
-            # Download the image
-            image_response = requests.get(image_url)
-            if image_response.status_code != 200:
-                continue
+            # Check if we're running in Vercel
+            in_vercel = os.environ.get('VERCEL') == '1'
             
-            # Save the image
-            file_name = f"{int(time.time())}_{idx}_{generate_random_name()}.png"
-            os.makedirs(settings.MEME_STORAGE_PATH, exist_ok=True)
-            file_path = os.path.join(settings.MEME_STORAGE_PATH, file_name)
-            
-            with open(file_path, "wb") as f:
-                f.write(image_response.content)
-            
-            # Create a coin icon (simplified version of the image)
-            create_coin_icon(image_response.content, file_name)
-            
-            results.append({
-                "prompt": item_prompt,
-                "image_path": file_path,
-                "image_url": f"/images/{file_name}",
-                "coin_icon_url": f"/images/coin_{file_name}"
-            })
+            if not in_vercel:
+                # Download the image when not in Vercel
+                image_response = requests.get(image_url)
+                if image_response.status_code != 200:
+                    continue
+                
+                # Save the image
+                file_name = f"{int(time.time())}_{idx}_{generate_random_name()}.png"
+                os.makedirs(meme_storage_path, exist_ok=True)
+                file_path = os.path.join(meme_storage_path, file_name)
+                
+                with open(file_path, "wb") as f:
+                    f.write(image_response.content)
+                
+                # Create a coin icon (simplified version of the image)
+                create_coin_icon(image_response.content, file_name)
+                
+                results.append({
+                    "prompt": item_prompt,
+                    "image_path": file_path,
+                    "image_url": f"/images/{file_name}",
+                    "coin_icon_url": f"/images/coin_{file_name}"
+                })
+            else:
+                # In Vercel, just return the DALL-E URL directly
+                file_name = f"{int(time.time())}_{idx}_{generate_random_name()}.png"
+                results.append({
+                    "prompt": item_prompt,
+                    "image_path": "none",
+                    "image_url": image_url,  # Use the DALL-E URL directly
+                    "coin_icon_url": image_url  # Use the same URL for coin icon
+                })
         
         return {
             "success": True,
@@ -170,7 +192,7 @@ def create_coin_icon(image_data, original_filename):
         
         # Save the coin icon
         coin_filename = f"coin_{original_filename}"
-        coin_path = os.path.join(settings.MEME_STORAGE_PATH, coin_filename)
+        coin_path = os.path.join(meme_storage_path, coin_filename)
         img.save(coin_path)
         
         return True
