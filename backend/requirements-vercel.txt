@@ -8,4 +8,5 @@ httpx==0.25.1
 pillow==10.1.0
 python-multipart==0.0.6
 requests==2.31.0
-vercel-blob==0.16.1 
+vercel-blob==0.16.1
+mangum==0.17.0 

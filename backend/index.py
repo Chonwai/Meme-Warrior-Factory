@@ -17,8 +17,15 @@ try:
     print("Attempting to import FastAPI app...")
     from app.main import app
     
-    # Define handler function - use the app directly instead of wrapping it
-    handler = app
+    # Define a proper ASGI handler function that Vercel expects
+    def handler(event, context):
+        import json
+        import base64
+        from mangum import Mangum
+        
+        asgi_handler = Mangum(app)
+        response = asgi_handler(event, context)
+        return response
     
     print("Successfully imported app.main and created handler")
     
@@ -26,6 +33,7 @@ except Exception as e:
     # If importing fails, create a minimal app
     print(f"Error importing app.main: {str(e)}")
     from fastapi import FastAPI
+    from mangum import Mangum
     
     minimal_app = FastAPI()
     
@@ -49,6 +57,8 @@ except Exception as e:
                           if k.startswith('PYTHON') or k == 'VERCEL' or k == 'SKIP_FILE_OPERATIONS'}
         }
     
-    # Use the minimal app directly as the handler
-    handler = minimal_app
+    # Define a proper handler for the minimal app
+    def handler(event, context):
+        asgi_handler = Mangum(minimal_app)
+        return asgi_handler(event, context)
  

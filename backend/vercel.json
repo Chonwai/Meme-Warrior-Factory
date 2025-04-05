@@ -7,10 +7,5 @@
       "config": { "runtime": "python3.12", "pythonVersion": "3.12" }
     }
   ],
-  "routes": [{ "src": "/(.*)", "dest": "index.py" }],
-  "env": {
-    "PYTHONUNBUFFERED": "true",
-    "VERCEL": "1",
-    "SKIP_FILE_OPERATIONS": "1"
-  }
+  "routes": [{ "src": "/(.*)", "dest": "index.py" }]
 }
