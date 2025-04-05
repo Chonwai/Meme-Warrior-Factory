@@ -1,3 +1,16 @@
 {
-  "routes": [{ "src": "/(.*)", "dest": "run.py" }]
+  "version": 2,
+  "builds": [
+    {
+      "src": "run.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "run.py" }
+  ],
+  "env": {
+    "VERCEL": "1",
+    "SKIP_FILE_OPERATIONS": "1"
+  }
 }
