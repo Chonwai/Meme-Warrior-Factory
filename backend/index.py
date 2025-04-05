@@ -13,12 +13,14 @@ print(f"- Working directory: {os.getcwd()}")
 print(f"- Environment variables: {[k for k in os.environ.keys() if k.startswith('PYTHON') or k == 'VERCEL' or k == 'SKIP_FILE_OPERATIONS']}")
 
 try:
-    # Try to import the main app
-    from app.main import app
+    # Try to import the main app with a simpler approach
+    print("Attempting to import FastAPI app...")
+    from fastapi import FastAPI
+    from app.main import app as main_app
     print("Successfully imported app.main")
     
-    # Entry point for Vercel
-    handler = app
+    # Create handler for Vercel
+    handler = main_app
     
 except Exception as e:
     # If importing fails, create a minimal app
@@ -47,6 +49,6 @@ except Exception as e:
                           if k.startswith('PYTHON') or k == 'VERCEL' or k == 'SKIP_FILE_OPERATIONS'}
         }
     
-    # Entry point for Vercel
+    # Create handler for Vercel
     handler = app
  

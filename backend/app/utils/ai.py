@@ -3,10 +3,13 @@ import requests
 import time
 import random
 import string
-from openai import OpenAI
-from PIL import Image
-from io import BytesIO
 import asyncio
+from io import BytesIO
+
+try:
+    from PIL import Image
+except ImportError:
+    print("PIL not available, image processing features will be limited")
 
 # Initialize OpenAI client with fallback to environment variables
 try:
@@ -29,10 +32,11 @@ IN_VERCEL = os.environ.get('VERCEL') == '1'
 if IN_VERCEL and not BLOB_TOKEN:
     print("WARNING: Running in Vercel but BLOB_READ_WRITE_TOKEN is not set!")
 else:
-    os.environ["BLOB_READ_WRITE_TOKEN"] = BLOB_TOKEN
+    os.environ["BLOB_READ_WRITE_TOKEN"] = BLOB_TOKEN or ""
 
 # Initialize OpenAI client
 try:
+    from openai import OpenAI
     client = OpenAI(api_key=api_key)
     print(f"OpenAI client initialized successfully with API key starting with: {api_key[:4] if api_key else 'None'}")
 except Exception as e:

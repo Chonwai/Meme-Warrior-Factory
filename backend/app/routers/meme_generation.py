@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
-from typing import List, Optional
+from fastapi import APIRouter, Query
+from typing import Optional
 import os
 import time
 
@@ -13,9 +12,12 @@ router = APIRouter(
 # Detect if we're running in Vercel
 IN_VERCEL = os.environ.get('VERCEL') == '1'
 
-# Only import database dependencies if not in Vercel
+# Only import dependencies if not in Vercel environment
 if not IN_VERCEL:
+    # These imports might fail in Vercel, but that's ok as they're not used there
     try:
+        from fastapi import Depends, HTTPException, status
+        from sqlalchemy.orm import Session
         from app.config.database import get_db
         from app.utils.auth import get_current_user
         from app.models.user import User
@@ -33,7 +35,7 @@ else:
 # Import AI utilities which should work in both environments
 from app.utils.ai import generate_meme_image, generate_meme_soldier_name
 
-@router.post("/generate", response_model=dict)
+@router.post("/generate", response_model=None)
 async def generate_meme(
     request: MemeSoldierGeneration,
     db: Session = None,
@@ -161,7 +163,7 @@ async def generate_meme(
             "error": str(e)
         }
 
-@router.post("/generate_test", response_model=dict)
+@router.post("/generate_test", response_model=None)
 async def generate_meme_test(
     request: MemeSoldierGeneration
 ):
@@ -236,7 +238,7 @@ async def generate_meme_test(
 
 # Only include this endpoint if not in Vercel
 if not IN_VERCEL:
-    @router.post("/mint/{soldier_id}", response_model=dict)
+    @router.post("/mint/{soldier_id}", response_model=None)
     async def mint_soldier(
         soldier_id: int,
         db: Session = Depends(get_db),
@@ -250,10 +252,11 @@ if not IN_VERCEL:
         ).first()
         
         if not soldier:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Meme soldier not found or you don't have permission"
-            )
+            # Return error response instead of raising an exception
+            return {
+                "success": False,
+                "error": "Meme soldier not found or you don't have permission"
+            }
         
         # Just a placeholder response for now - will implement actual minting later
         return {

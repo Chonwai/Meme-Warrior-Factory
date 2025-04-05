@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import sys
 import time
-import importlib
 
 # Detect if we're running in Vercel
 IN_VERCEL = os.environ.get('VERCEL') == '1'
