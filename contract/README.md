@@ -28,7 +28,6 @@ Warriors created during testing and deployment:
 - **Name**: Celo Alpha Warrior
 - **Symbol**: CALPHAW
 - **Description**: The premier alpha warrior on Celo
-- **Token Address**: `0x...` (Will be populated after full interaction test)
 - **Creator**: `0xb3c7b002F7880B644C0395153658FcECb0fe4765`
 - **Created**: April 5, 2025
 
