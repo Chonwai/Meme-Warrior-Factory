@@ -28,6 +28,10 @@ if not IN_VERCEL:
 else:
     # Define minimal schemas for Vercel
     from pydantic import BaseModel
+    from typing import Any
+    
+    # Define a Session type for Vercel environment to avoid "Session not defined" error
+    Session = Any
     
     class MemeSoldierGeneration(BaseModel):
         prompt: str
