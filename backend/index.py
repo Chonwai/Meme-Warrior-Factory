@@ -17,9 +17,8 @@ try:
     print("Attempting to import FastAPI app...")
     from app.main import app
     
-    # Define a simpler handler function
-    async def handler(scope, receive, send):
-        await app(scope, receive, send)
+    # Define handler function - use the app directly instead of wrapping it
+    handler = app
     
     print("Successfully imported app.main and created handler")
     
@@ -50,7 +49,6 @@ except Exception as e:
                           if k.startswith('PYTHON') or k == 'VERCEL' or k == 'SKIP_FILE_OPERATIONS'}
         }
     
-    # Create ASGI handler for minimal app
-    async def handler(scope, receive, send):
-        await minimal_app(scope, receive, send)
+    # Use the minimal app directly as the handler
+    handler = minimal_app
  
