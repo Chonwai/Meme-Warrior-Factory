@@ -24,7 +24,11 @@ app = FastAPI(
 # 設置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://meme-warrior-factory-next-js.vercel.app",  # 前端應用URL
+        "http://localhost:3000",  # 本地開發前端
+        "http://127.0.0.1:3000"   # 本地開發前端替代
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
