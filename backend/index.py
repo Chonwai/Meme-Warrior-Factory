@@ -10,7 +10,7 @@ os.environ["SKIP_FILE_OPERATIONS"] = "1"
 print("Current environment:")
 print(f"- Python version: {sys.version}")
 print(f"- Working directory: {os.getcwd()}")
-print(f"- Environment variables: {[k for k in os.environ.keys() if k.startswith('PYTHON') or k == 'VERCEL' or k == 'SKIP_FILE_OPERATIONS')]}")
+print(f"- Environment variables: {[k for k in os.environ.keys() if k.startswith('PYTHON') or k == 'VERCEL' or k == 'SKIP_FILE_OPERATIONS']}")
 
 try:
     # Try to import the main app
