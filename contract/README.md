@@ -1,156 +1,177 @@
-# MemeWarriors Smart Contracts
+# MemeWarriors Contract Platform
 
-This repository contains the smart contracts for the MemeWarriors platform built on the CELO and Flow blockchains.
+Cross-chain meme trading game platform deployed on both Flow EVM and Celo blockchains.
 
 ## Overview
 
-MemeWarriors is a fun and engaging platform where users can:
-- Create meme-inspired tokens
-- Deploy their warriors to battle
-- Vote for warriors in battles
-- Earn rewards for successfully predicting battle outcomes
+MemeWarriors is a blockchain-based platform that allows users to create, trade, and battle with meme-themed warriors. The platform is deployed on both Flow EVM Testnet and Celo Mainnet.
 
-## Project Structure
+## Deployed Contracts
 
-```
-meme-warriors-contract/
-├── contracts/               # Smart contract source code
-│   ├── core/                # Core contracts
-│   │   ├── MemeWarriorsReward.sol
-│   │   └── WarriorFactory.sol
-│   ├── interfaces/          # Contract interfaces
-│   │   ├── IMemeWarriorsReward.sol
-│   │   ├── IMemeWarriorsToken.sol
-│   │   ├── IWarriorFactory.sol
-│   │   └── IWarriorToken.sol
-│   └── tokens/              # Token contracts
-│       ├── MemeWarriorsToken.sol
-│       └── WarriorToken.sol
-├── scripts/                 # Deployment scripts
-│   ├── deploy.js            # Celo deployment
-│   ├── deploy-local.js      # Local Hardhat network deployment
-│   ├── deploy-flow.js       # Flow EVM deployment
-│   ├── interact.js          # Interaction script for Celo
-│   ├── interact-local.js    # Local interaction script
-│   └── interact-flow.js     # Flow EVM interaction script
-├── test/                    # Tests
-│   ├── MemeWarriorsToken.test.js
-│   └── WarriorToken.test.js
-├── .env.example             # Example environment variables
-├── FUNCTION_GUIDE.md        # Detailed guide for contract functions
-├── LOCAL_TESTING.md         # Guide for local development and testing
-├── FLOW_DEPLOYMENT.md       # Guide for deploying to Flow EVM
-├── hardhat.config.js        # Hardhat configuration
-├── package.json             # Project dependencies
-└── README.md                # This file
-```
+### Celo Mainnet
 
-## Contracts
+| Contract | Address | Description |
+|----------|---------|-------------|
+| MemeWarriorsToken | `0xc519A9284B08D334f9a688dA7bA65cE892e73392` | Main token contract for the MemeWarriors platform |
+| WarriorFactory | `0x55f59AfF32b077b06de9B6A472808757CAc51517` | Factory contract for creating and managing warriors |
+| MemeWarriorsReward | `0xEC1dE75D66d683F672F711a42d69454b475beB30` | Reward mechanism for battles and achievements |
 
-1. **MemeWarriorsToken**: The main platform token for the MemeWarriors game.
-2. **MemeWarriorsReward**: The reward system for users who successfully vote/guess winning teams.
-3. **WarriorFactory**: For creating warrior tokens.
-4. **WarriorToken**: The ERC20 token representing a single meme warrior.
+**Deployment Time**: 2025-04-05T21:01:48.986Z  
+**Deployer Address**: `0xb3c7b002F7880B644C0395153658FcECb0fe4765`  
+**Network**: Celo Mainnet
 
-## Development
+#### Warrior Registry (Celo Mainnet)
+
+Warriors created during testing and deployment:
+
+##### Warrior #0
+- **Name**: Celo Alpha Warrior
+- **Symbol**: CALPHAW
+- **Description**: The premier alpha warrior on Celo
+- **Token Address**: `0x...` (Will be populated after full interaction test)
+- **Creator**: `0xb3c7b002F7880B644C0395153658FcECb0fe4765`
+- **Created**: April 5, 2025
+
+#### Verification Links (Celo Mainnet)
+
+- [MemeWarriorsToken](https://explorer.celo.org/address/0xc519A9284B08D334f9a688dA7bA65cE892e73392)
+- [WarriorFactory](https://explorer.celo.org/address/0x55f59AfF32b077b06de9B6A472808757CAc51517)
+- [MemeWarriorsReward](https://explorer.celo.org/address/0xEC1dE75D66d683F672F711a42d69454b475beB30)
+
+### Flow EVM Testnet
+
+| Contract | Address | Description |
+|----------|---------|-------------|
+| MemeWarriorsToken | `0xC4a479F0DF1090C2546f400Ab1b0Ee70a3243Ca2` | Main token contract for the MemeWarriors platform |
+| WarriorFactory | `0x6c4b9e235E3e48bFeDec228c10c5951915044D0E` | Factory contract for creating and managing warriors |
+| MemeWarriorsReward | `0x820651EEa47d9f9A86364D4b3e6c83D0691f0664` | Reward mechanism for battles and achievements |
+
+**Deployment Time**: 2025-04-05T16:40:17.643Z  
+**Deployer Address**: `0xb3c7b002F7880B644C0395153658FcECb0fe4765`  
+**Network**: Flow EVM Testnet
+
+#### Verification Links (Flow EVM Testnet)
+
+- [MemeWarriorsToken](https://evm-testnet.flowscan.io/address/0xC4a479F0DF1090C2546f400Ab1b0Ee70a3243Ca2)
+- [WarriorFactory](https://evm-testnet.flowscan.io/address/0x6c4b9e235E3e48bFeDec228c10c5951915044D0E)
+- [MemeWarriorsReward](https://evm-testnet.flowscan.io/address/0x820651EEa47d9f9A86364D4b3e6c83D0691f0664)
+
+Additional details about Flow EVM Testnet deployment are available in the `flow-deployment-addresses.json` file and `FLOW_DEPLOYMENT.md`.
+
+### Celo Testnet (Alfajores)
+
+For testing purposes, we also have deployments on Celo Alfajores Testnet. These deployments are meant for development and testing before moving to mainnet.
+
+Details about Celo Testnet deployment and interaction can be found in the `deployment-addresses.json` file and script documentation.
+
+## Getting Started
 
 ### Prerequisites
 
-- Node.js (v14 or later)
-- npm or yarn
-- A wallet with testnet funds (for Alfajores or Flow testnet deployment)
+1. Node.js and npm installed
+2. A wallet with private key and enough tokens on the target network
+3. Environment variables set up in `.env` file:
+   ```
+   PRIVATE_KEY=your_private_key_here
+   ```
 
-### Setup
+### Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/your-username/meme-warriors-contract.git
-cd meme-warriors-contract
-```
-
-2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Copy the environment example file and fill in your private key:
-```bash
-cp .env.example .env
-# Edit .env to add your private key
-```
+### Deployment
 
-### Compile Contracts
+#### Deploy to Flow EVM Testnet
 
 ```bash
-npm run compile
+npm run deploy:flow-testnet
 ```
 
-### Run Tests
+#### Deploy to Celo Mainnet
+
+⚠️ **WARNING: This will deploy to MAINNET and use real funds** ⚠️
 
 ```bash
-npm test
+npm run deploy:celo-mainnet
 ```
 
-### Testing Guide
+## Interaction Guide
 
-For comprehensive testing, you should test the following aspects:
+### Celo Mainnet
 
-1. **Token functionality**: Basic ERC20 operations like transfer, approve, allowance
-2. **WarriorFactory operations**: Creating warriors, deploying to battle, ending battles
-3. **Reward system**: Vote distributions, battle management, reward claiming
-4. **Controller permissions**: Check that only authorized addresses can burn tokens
+#### Basic Contract Information
 
-For detailed local testing instructions, see [LOCAL_TESTING.md](./LOCAL_TESTING.md).
-
-## Deployment Options
-
-### 1. Local Development (Recommended for testing)
-
-For local development and testing:
+To check the basic contract information without creating any transactions:
 
 ```bash
-# Start a local Hardhat node in one terminal
-npx hardhat node
-
-# Deploy to local node in another terminal
-npm run deploy:local
-
-# Interact with local deployment
-npm run interact:local
+npm run check:celo-mainnet
 ```
 
-### 2. Deploy to Celo Alfajores Testnet
+This will display:
+- Token name, symbol, and total supply
+- Factory configuration and existing warriors
+- Reward system setup and active battles
+
+#### Creating a New Warrior
+
+To create a new warrior on mainnet (costs real CELO):
 
 ```bash
-npm run deploy:alfajores
+npm run interact:celo-mainnet:full
 ```
 
-### 3. Deploy to Flow EVM Testnet
+This will:
+1. Display a warning and 10-second countdown
+2. Create a new "Celo Alpha Warrior" token
+3. Deploy it to the blockchain with 1000 tokens initial supply
+4. Show the transaction details and warrior token address
+
+### Flow EVM Testnet
+
+#### Basic Contract Information
 
 ```bash
-npm run deploy:flow
+npm run check:flow
 ```
 
-For detailed instructions on Flow EVM deployment, see [FLOW_DEPLOYMENT.md](./FLOW_DEPLOYMENT.md).
-
-### 4. Deploy to Celo Mainnet (Production)
+#### Interaction (Check Mode)
 
 ```bash
-npx hardhat run scripts/deploy.js --network celo
+npm run interact:flow
 ```
 
-## Contract Function Guide
+#### Interaction (Full Mode)
 
-For a detailed explanation of all contract functions, their parameters, and usage examples, see the [Function Guide](./FUNCTION_GUIDE.md).
+```bash
+npm run interact:flow -- --full
+```
 
-## Multi-Chain Support
+## Architecture
 
-This project supports deployment to:
-- Celo (Mainnet and Alfajores testnet)
-- Flow EVM (Testnet)
-- Local Hardhat network (for development)
+The MemeWarriors platform consists of three primary contracts:
 
-The contracts are written in Solidity and can be deployed to any EVM-compatible blockchain.
+1. **MemeWarriorsToken**: ERC-20 token contract that serves as the main utility token for the platform
+2. **WarriorFactory**: Creates and manages warrior NFTs, allowing users to mint their own meme warriors
+3. **MemeWarriorsReward**: Handles battles between warriors and distributes rewards to winners
+
+## Technical Details
+
+- Creation Fee: 0.01 CELO/FLOW per warrior
+- Warrior Token Standard: ERC-20 compatible tokens with mintable supply
+- Battle System: On-chain random selection with time-based locks
+
+## Security Considerations
+
+- All contracts have been deployed with standard OpenZeppelin libraries
+- Ownership controls are in place for administrative functions
+- The deployer address is the initial admin for all contracts
+- Gas optimization has been implemented for all transactions
+
+## Maintenance
+
+For future updates or interactions, ensure your wallet has sufficient tokens for gas fees. The contract uses dynamic gas pricing with a 30% buffer over the current network price to ensure transactions are processed.
 
 ## License
 

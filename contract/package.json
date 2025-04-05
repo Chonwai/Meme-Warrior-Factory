@@ -8,9 +8,16 @@
     "compile": "hardhat compile",
     "deploy:local": "hardhat run scripts/deploy-local.js --network localhost",
     "deploy:alfajores": "hardhat run scripts/deploy.js --network alfajores",
-    "deploy:flow": "hardhat run scripts/deploy-flow.js --network flow_testnet",
+    "deploy:flow-testnet": "hardhat run scripts/deploy-flow-testnet.js --network flow_testnet",
+    "deploy:flow": "hardhat run scripts/deploy-flow-testnet.js --network flow_testnet",
+    "deploy:celo-mainnet": "hardhat run scripts/deploy-celo-mainnet.js --network celo",
     "interact:local": "hardhat run scripts/interact-local.js --network localhost",
-    "interact:flow": "hardhat run scripts/interact-flow.js --network flow_testnet"
+    "interact:flow-testnet": "hardhat run scripts/interact-flow.js --network flow_testnet",
+    "interact:flow": "hardhat run scripts/interact-flow.js --network flow_testnet",
+    "interact:celo-mainnet": "hardhat run scripts/interact-celo-mainnet.js --network celo",
+    "interact:celo-mainnet:full": "hardhat run scripts/interact-celo-mainnet-full.js --network celo",
+    "check:flow": "hardhat run scripts/check-flow.js --network flow_testnet",
+    "check:celo-mainnet": "hardhat run scripts/check-celo-mainnet.js --network celo"
   },
   "keywords": [
     "blockchain",
