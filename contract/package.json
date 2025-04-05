@@ -1,0 +1,33 @@
+{
+  "name": "meme-warriors-contract",
+  "version": "1.0.0",
+  "description": "Smart contracts for the MemeWarriors game on CELO",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.js",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network alfajores"
+  },
+  "keywords": [
+    "blockchain",
+    "celo",
+    "meme",
+    "defi",
+    "gaming"
+  ],
+  "author": "MemeWarriors Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "chai": "^4.3.7",
+    "ethereum-waffle": "^3.4.4",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.17.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.3",
+    "dotenv": "^16.3.1"
+  }
+}
