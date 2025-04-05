@@ -22,7 +22,8 @@ contract WarriorToken is ERC20, ERC20Burnable, Ownable, IWarriorToken {
         string memory symbol,
         address initialOwner,
         uint256 initialSupply
-    ) ERC20(name, symbol) Ownable(initialOwner) {
+    ) ERC20(name, symbol) Ownable() {
+        _transferOwnership(initialOwner);
         _mint(initialOwner, initialSupply * 10 ** decimals());
     }
     
@@ -71,5 +72,20 @@ contract WarriorToken is ERC20, ERC20Burnable, Ownable, IWarriorToken {
     function burnFrom(address account, uint256 amount) public override(ERC20Burnable, IWarriorToken) onlyController {
         _spendAllowance(account, _msgSender(), amount);
         _burn(account, amount);
+    }
+    
+    /**
+     * @dev Burns a specific amount of tokens.
+     * Overrides both ERC20Burnable and IWarriorToken
+     */
+    function burn(uint256 amount) public virtual override(ERC20Burnable, IWarriorToken) {
+        super.burn(amount);
+    }
+    
+    /**
+     * @dev Override decimals function
+     */
+    function decimals() public view virtual override(ERC20, IWarriorToken) returns (uint8) {
+        return 18;
     }
 } 
