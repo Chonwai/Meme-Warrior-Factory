@@ -19,11 +19,7 @@ contract MemeWarriorsReward is IMemeWarriorsReward {
     
     uint256 public battleCounter = 0;
     
-    // Events
-    event BattleCreated(uint256 indexed battleId, uint256 team1Id, uint256 team2Id, uint256 startTime, uint256 endTime);
-    event VoteCast(address indexed user, uint256 indexed battleId, uint256 teamId);
-    event BattleEnded(uint256 indexed battleId, uint256 winningTeamId);
-    event RewardDistributed(address indexed user, uint256 indexed battleId, uint256 amount);
+    // Events are defined in the interface
     
     struct Battle {
         uint256 team1Id;

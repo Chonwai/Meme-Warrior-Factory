@@ -20,13 +20,19 @@ module.exports = {
       url: ALFAJORES_URL,
       accounts: [PRIVATE_KEY],
       chainId: 44787,
-      gasPrice: 2000000000
+      gasPrice: "auto", 
+      gasMultiplier: 2,
+      gas: 8000000,
+      timeout: 300000 // 5 minutes timeout
     },
     celo: {
       url: CELO_MAINNET_URL,
       accounts: [PRIVATE_KEY],
       chainId: 42220,
-      gasPrice: 2000000000
+      gasPrice: "auto",
+      gasMultiplier: 2,
+      gas: 8000000,
+      timeout: 300000 // 5 minutes timeout
     }
   },
   solidity: {
@@ -35,16 +41,20 @@ module.exports = {
       optimizer: {
         enabled: true,
         runs: 200
-      }
+      },
+      viaIR: true
     }
   },
+  resolver: {
+    extraImportPaths: ["node_modules"]
+  },
   paths: {
-    sources: "./",
+    sources: "./contracts",
     tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts"
   },
   mocha: {
-    timeout: 40000
+    timeout: 120000 // 2 minutes
   }
 }; 

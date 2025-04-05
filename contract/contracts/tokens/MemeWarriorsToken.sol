@@ -11,10 +11,7 @@ import "../interfaces/IMemeWarriorsToken.sol";
  * @dev Main platform token for the MemeWarriors game
  */
 contract MemeWarriorsToken is ERC20, ERC20Burnable, Ownable, IMemeWarriorsToken {
-    // Events
-    event Minted(address indexed to, uint256 amount);
-
-    constructor() ERC20("MemeWarriors", "MWAR") Ownable(msg.sender) {
+    constructor() ERC20("MemeWarriors", "MWAR") Ownable() {
         // Initial supply to contract deployer
         _mint(msg.sender, 1000000 * 10 ** decimals());
     }
@@ -34,5 +31,21 @@ contract MemeWarriorsToken is ERC20, ERC20Burnable, Ownable, IMemeWarriorsToken 
      */
     function decimals() public view virtual override(ERC20, IMemeWarriorsToken) returns (uint8) {
         return 18;
+    }
+
+    /**
+     * @dev Burns a specific amount of tokens.
+     * Overrides both ERC20Burnable and IMemeWarriorsToken
+     */
+    function burn(uint256 amount) public virtual override(ERC20Burnable, IMemeWarriorsToken) {
+        super.burn(amount);
+    }
+
+    /**
+     * @dev Burns tokens from a specific account.
+     * Overrides both ERC20Burnable and IMemeWarriorsToken
+     */
+    function burnFrom(address account, uint256 amount) public virtual override(ERC20Burnable, IMemeWarriorsToken) {
+        super.burnFrom(account, amount);
     }
 } 

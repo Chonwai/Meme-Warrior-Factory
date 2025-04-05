@@ -37,11 +37,7 @@ contract WarriorFactory is Ownable, IWarriorFactory {
     // Active warriors in battle
     mapping(uint256 => bool) private _activeWarriors;
     
-    // Events
-    event WarriorCreated(uint256 indexed warriorId, address indexed creator, address tokenAddress);
-    event WarriorDeployed(uint256 indexed warriorId, uint256 amount);
-    event WarriorRetired(uint256 indexed warriorId);
-    event BattleEnded(uint256 indexed winnerId, uint256 indexed loserId, uint256 burnedAmount);
+    // Events are declared in the interface
     
     struct WarriorMetadata {
         string name;
@@ -57,7 +53,7 @@ contract WarriorFactory is Ownable, IWarriorFactory {
         _;
     }
     
-    constructor() Ownable(msg.sender) {
+    constructor() Ownable() {
         feeCollector = msg.sender;
         battlefieldWallet = msg.sender; // Default to owner, should be updated
     }
@@ -198,7 +194,49 @@ contract WarriorFactory is Ownable, IWarriorFactory {
     }
     
     /**
-     * @dev Get warrior metadata
+     * @dev Get warrior basic info - split to avoid stack too deep errors
+     * @param _warriorId ID of the warrior
+     */
+    function getWarriorBasicInfo(uint256 _warriorId) public view returns (
+        string memory name,
+        string memory description,
+        string memory imageURI,
+        uint256 created
+    ) {
+        require(_warriorTokens[_warriorId] != address(0), "Warrior does not exist");
+        
+        WarriorMetadata storage warrior = _warriors[_warriorId];
+        
+        return (
+            warrior.name,
+            warrior.description,
+            warrior.imageURI,
+            warrior.created
+        );
+    }
+    
+    /**
+     * @dev Get warrior status info - split to avoid stack too deep errors
+     * @param _warriorId ID of the warrior
+     */
+    function getWarriorStatusInfo(uint256 _warriorId) public view returns (
+        address creator,
+        bool active,
+        address tokenAddress
+    ) {
+        require(_warriorTokens[_warriorId] != address(0), "Warrior does not exist");
+        
+        WarriorMetadata storage warrior = _warriors[_warriorId];
+        
+        return (
+            warrior.creator,
+            warrior.active,
+            _warriorTokens[_warriorId]
+        );
+    }
+    
+    /**
+     * @dev Get warrior metadata - splits calls to avoid stack too deep errors
      * @param _warriorId ID of the warrior
      */
     function getWarrior(uint256 _warriorId) external view override returns (
@@ -210,19 +248,10 @@ contract WarriorFactory is Ownable, IWarriorFactory {
         bool active,
         address tokenAddress
     ) {
-        require(_warriorTokens[_warriorId] != address(0), "Warrior does not exist");
+        (name, description, imageURI, created) = getWarriorBasicInfo(_warriorId);
+        (creator, active, tokenAddress) = getWarriorStatusInfo(_warriorId);
         
-        WarriorMetadata storage warrior = _warriors[_warriorId];
-        
-        return (
-            warrior.name,
-            warrior.description,
-            warrior.imageURI,
-            warrior.created,
-            warrior.creator,
-            warrior.active,
-            _warriorTokens[_warriorId]
-        );
+        return (name, description, imageURI, created, creator, active, tokenAddress);
     }
     
     /**

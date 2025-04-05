@@ -1,13 +1,13 @@
 const { ethers, network } = require("hardhat");
 
 async function main() {
-  console.log("Starting deployment...");
+  console.log("Starting local deployment...");
+  console.log("Network:", network.name);
 
   // Get the deployer account
   const [deployer] = await ethers.getSigners();
   console.log("Deploying contracts with the account:", deployer.address);
-  console.log("Account balance:", (await deployer.getBalance()).toString());
-  console.log("Network:", network.name);
+  console.log("Account balance:", ethers.utils.formatEther(await deployer.getBalance()));
 
   try {
     // Deploy MemeWarriorsToken
@@ -31,12 +31,16 @@ async function main() {
     await reward.deployed();
     console.log("MemeWarriorsReward deployed to:", reward.address);
     
-    // Set up permissions - optional setup step
-    console.log("\nSetting up permissions...");
+    // Set up permissions and initial configurations
+    console.log("\nSetting up initial configurations...");
     
     // Approve reward contract to spend tokens for battle rewards
     await token.approve(reward.address, ethers.utils.parseEther("100000"));
     console.log("Granted token spending approval to reward contract");
+
+    // Set battlefield wallet in factory
+    await factory.setBattlefieldWallet(deployer.address);
+    console.log("Set battlefield wallet to deployer address");
     
     // Save deployment addresses to a file for reference
     const fs = require("fs");
@@ -50,12 +54,14 @@ async function main() {
     };
     
     fs.writeFileSync(
-      "deployment-addresses.json", 
+      "deployment-addresses-local.json", 
       JSON.stringify(deployData, null, 2)
     );
-    console.log("\nDeployment addresses saved to deployment-addresses.json");
+    console.log("\nDeployment addresses saved to deployment-addresses-local.json");
     
-    console.log("\nDeployment completed successfully!");
+    console.log("\nLocal deployment completed successfully!");
+    console.log("\nTo test these contracts, run:");
+    console.log("  npx hardhat run scripts/interact.js --network localhost");
   } catch (error) {
     console.error("Deployment failed:", error);
     process.exit(1);
