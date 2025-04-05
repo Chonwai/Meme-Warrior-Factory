@@ -1,33 +1,37 @@
 {
   "name": "meme-warriors-contract",
   "version": "1.0.0",
-  "description": "Smart contracts for the MemeWarriors game on CELO",
+  "description": "Smart contracts for the MemeWarriors platform on CELO and Flow blockchains",
   "main": "index.js",
   "scripts": {
-    "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy": "hardhat run scripts/deploy.js",
-    "deploy:testnet": "hardhat run scripts/deploy.js --network alfajores"
+    "compile": "hardhat compile",
+    "deploy:local": "hardhat run scripts/deploy-local.js --network localhost",
+    "deploy:alfajores": "hardhat run scripts/deploy.js --network alfajores",
+    "deploy:flow": "hardhat run scripts/deploy-flow.js --network flow_testnet",
+    "interact:local": "hardhat run scripts/interact-local.js --network localhost",
+    "interact:flow": "hardhat run scripts/interact-flow.js --network flow_testnet"
   },
   "keywords": [
     "blockchain",
     "celo",
+    "flow",
+    "evm",
+    "solidity",
     "meme",
-    "defi",
-    "gaming"
+    "game"
   ],
-  "author": "MemeWarriors Team",
+  "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.2.3",
-    "@nomiclabs/hardhat-waffle": "^2.0.6",
-    "chai": "^4.3.7",
-    "ethereum-waffle": "^3.4.4",
-    "ethers": "^5.7.2",
-    "hardhat": "^2.17.0"
-  },
-  "dependencies": {
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@nomiclabs/hardhat-ethers": "^2.0.5",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@openzeppelin/contracts": "^4.9.3",
-    "dotenv": "^16.3.1"
+    "chai": "^4.3.6",
+    "dotenv": "^16.3.1",
+    "ethereum-waffle": "^4.0.10",
+    "ethers": "^5.6.1",
+    "hardhat": "^2.9.1"
   }
 }
