@@ -13,6 +13,14 @@ MemeWarriors Factory is a platform that combines AI-generated meme art with bloc
 
 ## Architecture
 
+- Built in Backend as API, AI Agent to handle Warrior image, name and details for coin creation.
+   - We utilize gpt-3.5 and openai dall-e2 to save cost, will upgrade to better model later.
+
+- Smart Contract Deployed to Blockchain including Celo Mainnet, Testnet and Flow Testnet.
+   - The contract includes Platform Token, Battle Reward, Warrior Factory and Warrior Creation.
+
+- We connect to Metamask for Celo and Flow and World ID inside World App.
+
 The project consists of three main components:
 
 ### Backend (FastAPI)
