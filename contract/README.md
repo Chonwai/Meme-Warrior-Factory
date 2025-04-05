@@ -1,6 +1,6 @@
 # MemeWarriors Smart Contracts
 
-This repository contains the smart contracts for the MemeWarriors platform built on the CELO blockchain.
+This repository contains the smart contracts for the MemeWarriors platform built on the CELO and Flow blockchains.
 
 ## Overview
 
@@ -27,12 +27,19 @@ meme-warriors-contract/
 │       ├── MemeWarriorsToken.sol
 │       └── WarriorToken.sol
 ├── scripts/                 # Deployment scripts
-│   └── deploy.js
+│   ├── deploy.js            # Celo deployment
+│   ├── deploy-local.js      # Local Hardhat network deployment
+│   ├── deploy-flow.js       # Flow EVM deployment
+│   ├── interact.js          # Interaction script for Celo
+│   ├── interact-local.js    # Local interaction script
+│   └── interact-flow.js     # Flow EVM interaction script
 ├── test/                    # Tests
 │   ├── MemeWarriorsToken.test.js
 │   └── WarriorToken.test.js
 ├── .env.example             # Example environment variables
 ├── FUNCTION_GUIDE.md        # Detailed guide for contract functions
+├── LOCAL_TESTING.md         # Guide for local development and testing
+├── FLOW_DEPLOYMENT.md       # Guide for deploying to Flow EVM
 ├── hardhat.config.js        # Hardhat configuration
 ├── package.json             # Project dependencies
 └── README.md                # This file
@@ -51,7 +58,7 @@ meme-warriors-contract/
 
 - Node.js (v14 or later)
 - npm or yarn
-- A Celo wallet with testnet funds (for Alfajores deployment)
+- A wallet with testnet funds (for Alfajores or Flow testnet deployment)
 
 ### Setup
 
@@ -75,13 +82,13 @@ cp .env.example .env
 ### Compile Contracts
 
 ```bash
-npx hardhat compile
+npm run compile
 ```
 
 ### Run Tests
 
 ```bash
-npx hardhat test
+npm test
 ```
 
 ### Testing Guide
@@ -93,22 +100,40 @@ For comprehensive testing, you should test the following aspects:
 3. **Reward system**: Vote distributions, battle management, reward claiming
 4. **Controller permissions**: Check that only authorized addresses can burn tokens
 
-Here's a simple test workflow:
+For detailed local testing instructions, see [LOCAL_TESTING.md](./LOCAL_TESTING.md).
 
-1. Deploy all contracts
-2. Create some warriors using different accounts
-3. Deploy warriors to battle
-4. Simulate battles and end them
-5. Check token distributions and balances
-6. Test the vote and reward system
+## Deployment Options
 
-### Deploy to Alfajores Testnet
+### 1. Local Development (Recommended for testing)
+
+For local development and testing:
 
 ```bash
-npx hardhat run scripts/deploy.js --network alfajores
+# Start a local Hardhat node in one terminal
+npx hardhat node
+
+# Deploy to local node in another terminal
+npm run deploy:local
+
+# Interact with local deployment
+npm run interact:local
 ```
 
-### Deploy to Celo Mainnet
+### 2. Deploy to Celo Alfajores Testnet
+
+```bash
+npm run deploy:alfajores
+```
+
+### 3. Deploy to Flow EVM Testnet
+
+```bash
+npm run deploy:flow
+```
+
+For detailed instructions on Flow EVM deployment, see [FLOW_DEPLOYMENT.md](./FLOW_DEPLOYMENT.md).
+
+### 4. Deploy to Celo Mainnet (Production)
 
 ```bash
 npx hardhat run scripts/deploy.js --network celo
@@ -117,6 +142,15 @@ npx hardhat run scripts/deploy.js --network celo
 ## Contract Function Guide
 
 For a detailed explanation of all contract functions, their parameters, and usage examples, see the [Function Guide](./FUNCTION_GUIDE.md).
+
+## Multi-Chain Support
+
+This project supports deployment to:
+- Celo (Mainnet and Alfajores testnet)
+- Flow EVM (Testnet)
+- Local Hardhat network (for development)
+
+The contracts are written in Solidity and can be deployed to any EVM-compatible blockchain.
 
 ## License
 
