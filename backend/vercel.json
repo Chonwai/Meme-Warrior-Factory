@@ -2,10 +2,15 @@
   "version": 2,
   "builds": [
     {
-      "src": "index.py",
+      "src": "run.py",
       "use": "@vercel/python",
       "config": { "runtime": "python3.12", "pythonVersion": "3.12" }
     }
   ],
-  "routes": [{ "src": "/(.*)", "dest": "index.py" }]
+  "routes": [{ "src": "/(.*)", "dest": "run.py" }],
+  "env": {
+    "PYTHONUNBUFFERED": "true",
+    "VERCEL": "1",
+    "SKIP_FILE_OPERATIONS": "1"
+  }
 }
